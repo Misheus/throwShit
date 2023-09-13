@@ -1,0 +1,56 @@
+if (!("Entities" in this)) return;
+if ("throwLiteralShit" in this) return;
+IncludeScript("ppmod3");
+
+printl("ass we can");
+
+local auto = Entities.CreateByClassname("logic_auto");
+ppmod.addscript(auto, "OnMapTransition", "throwLiteralShit.setup()");
+ppmod.addscript(auto, "OnNewGame", "throwLiteralShit.setup()");
+
+::throwLiteralShit <- {
+    setup = function() {
+        ppmod.player.enable();
+        SendToConsole("alias +mouse_menu \"script throwLiteralShit.throwShit()\"");
+		ppmod.create("prop_dynamic_create poo/poo.mdl",function (cache) {
+        this.cache <- cache
+        ppmod.fire(cache,"disablemotion")
+        ppmod.wait(function () {
+            ppmod.fire(cache,"kill")
+        },0.1)
+    })
+	},
+	last = null,
+
+    throwShit = function() {
+        printl("throwing shit...");
+		ppmod.create("ent_create_portal_weighted_cube", function(cube) {
+			ppmod.create("ent_create_portal_weighted_cube", function(cube2):(cube) {
+				throwLiteralShit.last = cube
+				ppmod.fire(cube2, "DisableDraw")
+				local ass = ppmod.player.eyes.GetAngles()
+				local fuck = ppmod.player.eyes_vec()
+				ppmod.keyval(cube, "CollisionGroup", 23)
+				ppmod.keyval(cube2, "CollisionGroup", 23)
+				//ppmod.keyval(cube2, "RenderMode", 1)
+				//ppmod.keyval(cube2, "RenderAmount", 128	)
+				//ppmod.keyval(cube2, "RenderColor", "0 255 0")
+				cube.SetAngles( ass.x, ass.y, ass.z);
+				cube2.SetAngles( ass.x, ass.y, ass.z);
+				cube.SetOrigin( ppmod.player.eyes.GetOrigin());
+				cube2.SetOrigin( ppmod.player.eyes.GetOrigin()-fuck*15);
+				//printl(fuck)
+				//cube.SetVelocity(fuck*100);//Why it's always stupidly simple shit that is not working?
+				ppmod.wait (function():(cube2, cube){
+					ppmod.keyval(cube, "CollisionGroup", 24)
+					cube2.Destroy()
+				}, 0.25)
+
+				cube.SetModel("models/poo/poo.mdl")
+				cube.SetSize(Vector(-5,-5,-5),Vector(5,5,5))
+
+				ppmod.fire(cube, "Color", "255 0 0");
+			});
+		});
+	}
+}
