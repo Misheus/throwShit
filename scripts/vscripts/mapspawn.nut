@@ -7,6 +7,9 @@ local auto = Entities.CreateByClassname("logic_auto");
 ppmod.addscript(auto, "OnMapTransition", "throwLiteralShit.setup()");
 ppmod.addscript(auto, "OnNewGame", "throwLiteralShit.setup()");
 
+
+//TODO make poop throw further
+
 ::throwLiteralShit <- {
 	triggered = null,//keeps track of what we already triggered
     setup = function() {
@@ -81,6 +84,7 @@ ppmod.addscript(auto, "OnNewGame", "throwLiteralShit.setup()");
 				if(throwLiteralShit.triggered == receptacleName) return;
 				printl("found laserCatcher!")
 				//ppmod.fire(laserCatcher, "")//TODO What should I fire?
+				//TODO spawn laser emiter, position it, angle it, enable it, disable draw, disable collision. You can steal it from splits.nut
 				throwLiteralShit.triggered = receptacleName
 			}
 			
@@ -128,6 +132,19 @@ ppmod.addscript(auto, "OnNewGame", "throwLiteralShit.setup()");
 					throwLiteralShit.triggered = "Mysheus-sp_a1_intro7-door2"
 				}
 			}
+			
+			//TODO color affected stuff with poop color.
+			//TODO for floor buttons add output to pressin on pressout
+			
+			//for sp_a2_bts1
+			//jailbreak_chamber_lit-power_loss_teleport Enable
+			//@jailbreak_begin_logic Trigger
+			//@jailbreak_1st_wall_1_2_open_logic Trigger
+			//@jailbreak_1st_wall_2_2_open_logic Trigger
+			
+			//ent_fire jailbreak_chamber_lit-power_loss_teleport Enable;ent_fire @jailbreak_begin_logic Trigger;ent_fire @jailbreak_1st_wall_1_2_open_logic Trigger;ent_fire @jailbreak_1st_wall_2_2_open_logic Trigger; ent_fire 
+			
+			
 		}, 0.25)
 	},
 	last = null,//last shit we threw
