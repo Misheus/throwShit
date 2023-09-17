@@ -42,6 +42,8 @@ ppmod.addscript(auto, "OnNewGame", "throwLiteralShit.setup()");
 				if(throwLiteralShit.triggered == buttonName) return;//Do not activate button if already activated
 				printl("found button!")
 				ppmod.fire(button, "pressin")
+				//Next line (and concept it implements) stolen from ecopchtal's mapspawn.nut
+				ppmod.addoutput(button, "OnUnpressed", "!self", "pressin", "", 1);
 				throwLiteralShit.triggered = buttonName//keep track what we activated
 			}
 			
@@ -83,8 +85,37 @@ ppmod.addscript(auto, "OnNewGame", "throwLiteralShit.setup()");
 				local receptacleName = laserCatcher.GetName();
 				if(throwLiteralShit.triggered == receptacleName) return;
 				printl("found laserCatcher!")
-				//ppmod.fire(laserCatcher, "")//TODO What should I fire?
-				//TODO spawn laser emiter, position it, angle it, enable it, disable draw, disable collision. You can steal it from splits.nut
+				//ppmod.fire(laserCatcher, "")//This is not how it works
+				
+				//stolen from epochtal's splits.nut
+				ppmod.create("env_portal_laser", function (emitter):(laserCatcher) {
+					emitter.SetOrigin(laserCatcher.GetOrigin() - laserCatcher.GetForwardVector() * 64);
+					emitter.SetForwardVector(laserCatcher.GetForwardVector());
+					ppmod.fire(emitter, "TurnOn");
+					
+					//Next line is not stolen
+					ppmod.fire(emitter, "DisableDraw")
+				});
+				throwLiteralShit.triggered = receptacleName
+			}
+			
+			//trying to find laser relay nearby
+			local laserRelay = ppmod.get(throwLiteralShit.last.GetOrigin(), "prop_laser_relay", 50);
+			if(laserRelay) {
+				local receptacleName = laserRelay.GetName();
+				if(throwLiteralShit.triggered == receptacleName) return;
+				printl("found laserRelay!")
+				//ppmod.fire(laserRelay, "")//This is not how it works
+				
+				//stolen (but then modified) from epochtal's splits.nut
+				ppmod.create("env_portal_laser", function (emitter):(laserRelay) {
+					emitter.SetForwardVector(laserRelay.GetUpVector());
+					emitter.SetOrigin(laserRelay.GetOrigin() - laserRelay.GetUpVector() * 56 + emitter.GetUpVector()*8);
+					ppmod.fire(emitter, "TurnOn");
+					
+					//Next line is not stolen
+					ppmod.fire(emitter, "DisableDraw")
+				});
 				throwLiteralShit.triggered = receptacleName
 			}
 			
@@ -133,15 +164,19 @@ ppmod.addscript(auto, "OnNewGame", "throwLiteralShit.setup()");
 				}
 			}
 			
+			if(GetMapName() == "sp_a2_bridge_the_gap") {
+				local poo = throwLiteralShit.last.GetOrigin()//our shit is here
+				//Calculate distance by hand
+				local distance = pow(pow(-639-poo.x, 2)+pow(-638-poo.y, 2)+pow(1152-poo.z, 2), 0.5)
+				if(distance < 60 && throwLiteralShit.triggered != "Mysheus-sp_a2_bridge_the_gap") {
+					ppmod.fire(ppmod.get("trick_door_open_relay"), "trigger")
+					throwLiteralShit.triggered = "Mysheus-sp_a2_bridge_the_gap"
+				}
+			}
+			
 			//TODO color affected stuff with poop color.
-			//TODO for floor buttons add output to pressin on pressout
 			
 			//for sp_a2_bts1
-			//jailbreak_chamber_lit-power_loss_teleport Enable
-			//@jailbreak_begin_logic Trigger
-			//@jailbreak_1st_wall_1_2_open_logic Trigger
-			//@jailbreak_1st_wall_2_2_open_logic Trigger
-			
 			//ent_fire jailbreak_chamber_lit-power_loss_teleport Enable;ent_fire @jailbreak_begin_logic Trigger;ent_fire @jailbreak_1st_wall_1_2_open_logic Trigger;ent_fire @jailbreak_1st_wall_2_2_open_logic Trigger; ent_fire 
 			
 			
@@ -150,6 +185,7 @@ ppmod.addscript(auto, "OnNewGame", "throwLiteralShit.setup()");
 	last = null,//last shit we threw
 
     throwShit = function() {
+		//TODO check if shit is precached. Cause some times when you die or maybe load save game craches
         printl("throwing literal shit...");
 		//reset some shit
 		throwLiteralShit.last = null
@@ -177,6 +213,8 @@ ppmod.addscript(auto, "OnNewGame", "throwLiteralShit.setup()");
 					ppmod.keyval(poop, "CollisionGroup", 24)//poop is now thrown away, restoring collision with player
 					cube.Destroy()//we don't need propulsion cube anymore. His job is done.
 				}, 0.25)
+
+				//TODO make shit bigger
 
 				poop.SetModel("models/poo/poo.mdl")
 			});
