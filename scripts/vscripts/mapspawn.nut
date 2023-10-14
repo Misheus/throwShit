@@ -1,3 +1,6 @@
+//Contribute: https://github.com/Misheus/throwShit
+//As I think about this code with more than one brain cell, the checks should be done using triggers.
+
 //introduction lines stolen from one of the mods, I don't even remember, they all have them.
 if (!("Entities" in this)) return;
 if ("throwLiteralShit" in this) return;
@@ -9,6 +12,7 @@ ppmod.addscript(auto, "OnNewGame", "throwLiteralShit.setup()");
 
 
 //TODO make poop throw further
+
 
 ::throwLiteralShit <- {
 	triggered = null,//keeps track of what we already triggered
@@ -141,6 +145,28 @@ ppmod.addscript(auto, "OnNewGame", "throwLiteralShit.setup()");
 					ppmod.fire(door_player_clip, "Disable")
 			}
 			
+			//trying to find old Aperture floor button nearby
+			local button = ppmod.get(throwLiteralShit.last.GetOrigin(), "prop_under_floor_button", 50);
+			if(button) {
+				local buttonName = button.GetName();
+				if(throwLiteralShit.triggered == buttonName) return;//Do not activate button if already activated
+				printl("found button!")
+				ppmod.fire(button, "pressin")
+				//Next line (and concept it implements) stolen from ecopchtal's mapspawn.nut
+				ppmod.addoutput(button, "OnUnpressed", "!self", "pressin", "", 1);
+				throwLiteralShit.triggered = buttonName//keep track what we activated
+			}
+			
+			//trying to find old Aperture pedestal button
+			local pedestalButton = ppmod.get(throwLiteralShit.last.GetOrigin(), "prop_under_button", 50);
+			if(pedestalButton) {
+				local buttonName = pedestalButton.GetName();
+				if(throwLiteralShit.triggered == buttonName) return;//Do not activate button if already activated
+				printl("found pedestalButton!")
+				ppmod.fire(pedestalButton, "press")
+				throwLiteralShit.triggered = buttonName//keep track what we activated
+			}
+			
 			//TODO put map specific stuff outside this interval
 			//Specific maps have some weird shit.
 			if(GetMapName() == "sp_a1_intro7") {
@@ -174,10 +200,21 @@ ppmod.addscript(auto, "OnNewGame", "throwLiteralShit.setup()");
 				}
 			}
 			
-			//TODO color affected stuff with poop color.
-			
-			//for sp_a2_bts1
+			if(GetMapName() == "sp_a2_bts1") {
+				local poo = throwLiteralShit.last.GetOrigin()//our shit is here
+				//Calculate distance by hand
+				local distance = pow(pow(-9037-poo.x, 2)+pow(-1669-poo.y, 2)+pow(16-poo.z, 2), 0.5)
+				if(distance < 60 && throwLiteralShit.triggered != "Mysheus-sp_a2_bts1") {
+					ppmod.fire(ppmod.get("jailbreak_chamber_lit-power_loss_teleport"), "Enable")
+					ppmod.fire(ppmod.get("@jailbreak_begin_logic"), "trigger")
+					ppmod.fire(ppmod.get("@jailbreak_1st_wall_1_2_open_logic"), "trigger")
+					ppmod.fire(ppmod.get("@jailbreak_1st_wall_2_2_open_logic"), "trigger")
+					throwLiteralShit.triggered = "Mysheus-sp_a2_bts1"
+				}
+			}
 			//ent_fire jailbreak_chamber_lit-power_loss_teleport Enable;ent_fire @jailbreak_begin_logic Trigger;ent_fire @jailbreak_1st_wall_1_2_open_logic Trigger;ent_fire @jailbreak_1st_wall_2_2_open_logic Trigger; ent_fire 
+			
+			//TODO color affected stuff with poop color.
 			
 			
 		}, 0.25)
@@ -203,6 +240,15 @@ ppmod.addscript(auto, "OnNewGame", "throwLiteralShit.setup()");
 				local angles = ppmod.player.eyes.GetAngles()
 				local eyes_vec = ppmod.player.eyes_vec()
 				local position = ppmod.player.eyes.GetOrigin()
+				
+				//if player looks down, propulse player upwards
+				//we deal with unit vectors and one of them points straight down, so dot product simplifies to just checking z component
+				if(eyes_vec.z < -0.9) {
+					printl("player looked down");
+					player.SetVelocity(player.GetVelocity() + Vector(0,0,300));
+				}
+				
+				
 				ppmod.keyval(poop, "CollisionGroup", 23)//make cube and poop not collide with player
 				ppmod.keyval(cube, "CollisionGroup", 23)
 				poop.SetAngles( angles.x, angles.y, angles.z);//make them aligned with player orientation
